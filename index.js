@@ -9,12 +9,12 @@ const db = quickdb.table('event_stats');
 const logger = require('./api/logger');
 const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
-    ]
+	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMembers,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent
+	]
 });
 
 async function createDataEntry(data) {
@@ -27,14 +27,14 @@ async function createDataEntry(data) {
 
 async function generateDataToken() {
 	const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let token = '';
-    const tokenLength = 16;
+	let token = '';
+	const tokenLength = 16;
 
-    for (let i = 0; i < tokenLength; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        token += characters[randomIndex];
-    }
-    return token;
+	for (let i = 0; i < tokenLength; i++) {
+		const randomIndex = Math.floor(Math.random() * characters.length);
+		token += characters[randomIndex];
+	}
+	return token;
 }
 
 async function getUserCount() {
@@ -147,11 +147,11 @@ app.post('/auth/login', async (req, res) => {
 	const data = req.body;
 
 	let format = "jpg";
-    if (data.avatar && data.avatar.startsWith("a_")) {
-        format = "gif";
-    }
+	if (data.avatar && data.avatar.startsWith("a_")) {
+		format = "gif";
+	}
 
-    const avatarURL = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.${format}`;
+	const avatarURL = `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.${format}`;
 	const validData = {
 		userId: data.id,
 		step: 1,
