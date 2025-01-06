@@ -92,6 +92,7 @@ async function passStep(dataToken) {
 	if(step >= STEP_COUNT) {
 		userData.completed = true;
 		await setUserData(dataToken, userData);
+		await giveUserRole(userData);
 		sendEndLogs(userData);
 		return true;
 	}
@@ -99,6 +100,17 @@ async function passStep(dataToken) {
 		await sendStepPassLogs(userData, step + 1);
 	await setUserStep(dataToken, step + 1);
 	return (step + 1) === await getUserStep(dataToken);
+}
+
+async function giveUserRole(userData) {
+	let guild = client.guilds.cache.get(process.env.GUILD_ID);
+	if(!guild) return;
+	let member = await guild.members.fetch(userData.userId).catch(err => { logger.error(err);});
+	if(!member) return;
+	let role = await guild.roles.fetch(process.env.WINNER_ROLE_ID).catch(err => { logger.error(err);});
+	if(!role) return;
+	await member.roles.add(role).catch(err => { logger.error(err);});
+	logger.success(`POST /nextstep/ - Gave role to user ${userData.username} (${userData.userId})`);
 }
 
 async function setUserData(dataToken, data) {
@@ -171,9 +183,9 @@ app.post('/nextstep/:dataToken', async (req, res) => {
 
 	let userInfo = await getUserData(dataToken);
 	if(result) {
-		logger.success(`STEP - User ${userInfo.username} (${userInfo.userId}) passed step ${userInfo.step}`);
+		logger.success(`POST /nextstep/ - User ${userInfo.username} (${userInfo.userId}) passed step ${userInfo.step}`);
 	} else {
-		logger.error(`STEP - User ${userInfo.username} (${userInfo.userId}) failed to pass step ${userInfo.step}`);
+		logger.error(`POST /nextstep/ - User ${userInfo.username} (${userInfo.userId}) failed to pass step ${userInfo.step}`);
 	}
 });
 
