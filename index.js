@@ -111,6 +111,7 @@ async function giveUserRole(userData) {
 	if(!role) return;
 	await member.roles.add(role).catch(err => { logger.error(err);});
 	logger.success(`POST /nextstep/ - Gave role to user ${userData.username} (${userData.userId})`);
+	logger.warn(`POST /nextstep/ - User ${userData.username} (${userData.userId}) has completed the event`);
 }
 
 async function setUserData(dataToken, data) {
@@ -133,7 +134,7 @@ async function sendStartLogs(user) {
 	let channel = guild.channels.cache.get(process.env.LOGS_CHANNEL_ID);
 	if(!channel) return;
 	let userCount = await getUserCount();
-	await channel.send(`:door: <@${user.userId}> (${user.username}) vient de commencer l'énigme **(${userCount} participants)**`);
+	await channel.send(`:door: <@${user.userId}> (${user.username}) vient de commencer l'énigme **(${userCount} participant${userCount > 1 ? "s" : ""})**`);
 }
 
 async function sendStepPassLogs(user, step) {
@@ -149,7 +150,7 @@ async function sendEndLogs(user) {
 	if(!guild) return;
 	let channel = guild.channels.cache.get(process.env.LOGS_CHANNEL_ID);
 	if(!channel) return;
-	await channel.send(`🏆 <@${user.userId}> (${user.username}) vient de terminer toute les étapes`);
+	await channel.send(`🏆 <@${user.userId}> (${user.username}) vient de terminer toute les étapes ||${user.giftCode}||`);
 }
 
 app.use(express.json());
