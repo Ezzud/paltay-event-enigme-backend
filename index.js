@@ -92,6 +92,7 @@ async function passStep(dataToken) {
 	if(step >= STEP_COUNT) {
 		userData.completed = true;
 		await setUserData(dataToken, userData);
+		sendEndLogs(userData);
 		return true;
 	}
 	if(userData)
@@ -129,6 +130,14 @@ async function sendStepPassLogs(user, step) {
 	let channel = guild.channels.cache.get(process.env.LOGS_CHANNEL_ID);
 	if(!channel) return;
 	await channel.send(`:rocket: <@${user.userId}> (${user.username}) est passé à l'étape \` ${step} \``);
+}
+
+async function sendEndLogs(user) {
+	let guild = client.guilds.cache.get(process.env.GUILD_ID);
+	if(!guild) return;
+	let channel = guild.channels.cache.get(process.env.LOGS_CHANNEL_ID);
+	if(!channel) return;
+	await channel.send(`🏆 <@${user.userId}> (${user.username}) vient de terminer toute les étapes`);
 }
 
 app.use(express.json());
