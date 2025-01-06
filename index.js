@@ -19,10 +19,28 @@ const client = new Client({
 
 async function createDataEntry(data) {
 	const dataToken = await generateDataToken();
+	const giftCode = await generateGiftCode();
+	data.completed = false;
+	data.giftCode = giftCode;
 	await setUserData(dataToken, data);
 	logger.success(`POST /auth/login/ - Created data entry for user ${data.username} (${data.userId})`);
 	await sendStartLogs(data);
 	return dataToken;
+}
+
+async function generateGiftCode() {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let code = '';
+    const codeLength = 16;
+
+    for (let i = 0; i < codeLength; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        code += characters[randomIndex];
+        if ((i + 1) % 4 === 0 && i !== codeLength - 1) {
+            code += '-';
+        }
+    }
+    return code;
 }
 
 async function generateDataToken() {
@@ -67,8 +85,15 @@ async function setUserStep(dataToken, step) {
 }
 
 async function passStep(dataToken) {
+	const STEP_COUNT = 10;
+
 	const step = await getUserStep(dataToken);
 	const userData = await getUserData(dataToken);
+	if(step >= STEP_COUNT) {
+		userData.completed = true;
+		await setUserData(dataToken, userData);
+		return true;
+	}
 	if(userData)
 		await sendStepPassLogs(userData, step + 1);
 	await setUserStep(dataToken, step + 1);
@@ -101,7 +126,7 @@ async function sendStartLogs(user) {
 async function sendStepPassLogs(user, step) {
 	let guild = client.guilds.cache.get(process.env.GUILD_ID);
 	if(!guild) return;
-	let channel = guild.channels.cache.get(process.env.LOG_CHANNEL_ID);
+	let channel = guild.channels.cache.get(process.env.LOGS_CHANNEL_ID);
 	if(!channel) return;
 	await channel.send(`:rocket: <@${user.userId}> (${user.username}) est passé à l'étape \` ${step} \``);
 }
