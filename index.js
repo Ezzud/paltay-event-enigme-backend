@@ -222,6 +222,17 @@ app.post('/nextstep/:dataToken', async (req, res) => {
 	}
 });
 
+app.get('/stats', async (req, res) => {
+	const stats = await getGlobalStats();
+	res.send(stats);
+});
+
+app.get('/stats/:userid', async (req, res) => {
+	const userId = req.params.userid;
+	const userData = await getUserDataByUserId(userId);
+	res.send(userData);
+});
+
 app.post('/auth/login', async (req, res) => {
 	const data = req.body;
 
