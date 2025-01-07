@@ -189,21 +189,21 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
-	res.send('Comment tu sais?').catch(err => { logger.error(err);});
+	res.send('Comment tu sais?');
 	return;
 });
 
 app.get('/auth/verify/:token', async (req, res) => {
 	const dataToken = req.params.token;
 	const isValid = await tokenValid(dataToken);
-	res.send({ isValid: isValid }).catch(err => { logger.error(err);});
+	res.send({ isValid: isValid });
 	return;
 });
 
 app.get('/users/:dataToken', async (req, res) => {
 	const dataToken = req.params.dataToken;
 	const userData = await getUserData(dataToken);
-	res.send({ userData: userData }).catch(err => { logger.error(err);});
+	res.send({ userData: userData });
 	return;
 });
 
@@ -214,7 +214,7 @@ app.post('/nextstep/:dataToken', async (req, res) => {
 		return;
 	}
 	let result = await passStep(dataToken);
-	res.send({ success : result }).catch(err => { logger.error(err);});
+	res.send({ success : result });
 
 	let userInfo = await getUserData(dataToken);
 	if(result) {
@@ -227,14 +227,14 @@ app.post('/nextstep/:dataToken', async (req, res) => {
 
 app.get('/stats', async (req, res) => {
 	const stats = await getGlobalStats();
-	res.send(stats).catch(err => { logger.error(err);});
+	res.send(stats);
 	return;
 });
 
 app.get('/stats/:userid', async (req, res) => {
 	const userId = req.params.userid;
 	const userData = await getUserDataByUserId(userId);
-	res.send(userData).catch(err => { logger.error(err);});
+	res.send(userData);
 	return;
 });
 
@@ -255,10 +255,10 @@ app.post('/auth/login', async (req, res) => {
 	}
 	if(await getUserDataByUserId(data.id)) {
 		const dataToken = await getDataTokenByUserId(data.id);
-		return res.send({ token: dataToken }).catch(err => { logger.error(err);});
+		return res.send({ token: dataToken });
 	} else {
 		const dataToken = await createDataEntry(validData);
-		return res.send({ token: dataToken }).catch(err => { logger.error(err);});
+		return res.send({ token: dataToken });
 	}
 });
 
