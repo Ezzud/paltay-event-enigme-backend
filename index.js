@@ -172,6 +172,7 @@ async function sendStepPassLogs(user, step) {
 	if(!channel) return;
 	let { steps } = await getGlobalStats();
 	let stepCount = steps.find((s) => s.step == step) || 0;
+	if(!stepCount) stepCount = 0;
 	await channel.send(`:rocket: <@${user.userId}> (${user.username}) est passé à l'étape \` ${step} \`  ${stepCount ? `*(${stepCount.count+1} participant${stepCount.count > 1 ? "s" : ""} à cette étape)*` : ""}`);
 }
 
