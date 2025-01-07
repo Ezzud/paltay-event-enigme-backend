@@ -3,11 +3,14 @@ const express = require('express');
 const { QuickDB } = require('quick.db');
 const quickdb = new QuickDB();
 const bodyParser = require('body-parser');
-const app = express();
-const port = 4884;
 const db = quickdb.table('event_stats');
 const logger = require('./api/logger');
 const { Client, GatewayIntentBits } = require('discord.js');
+
+const app = express();
+const port = 4884;
+const STEP_COUNT = 10;
+
 const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
@@ -84,9 +87,34 @@ async function setUserStep(dataToken, step) {
 	await db.set(dataToken, userData);
 }
 
-async function passStep(dataToken) {
-	const STEP_COUNT = 10;
+async function getGlobalStats() {
+    const allData = await db.all();
+    const completed = allData.filter((data) => data.value.completed === true).length;
+    const total = allData.length;
 
+    const steps = {};
+    for (let i = 0; i < allData.length; i++) {
+        const step = allData[i].value.step;
+        if (steps[step]) {
+            steps[step]++;
+        } else {
+            steps[step] = 1;
+        }
+    }
+
+    const stepsArray = [];
+    for (const step in steps) {
+        if (steps.hasOwnProperty(step)) {
+            stepsArray.push({ step: step, count: steps[step] });
+        }
+    }
+
+    return { completed: completed, total: total, steps: stepsArray };
+}
+
+
+async function passStep(dataToken) {
+	
 	const step = await getUserStep(dataToken);
 	const userData = await getUserData(dataToken);
 	if(step >= STEP_COUNT) {
@@ -111,7 +139,7 @@ async function giveUserRole(userData) {
 	if(!role) return;
 	await member.roles.add(role).catch(err => { logger.error(err);});
 	logger.success(`POST /nextstep/ - Gave role to user ${userData.username} (${userData.userId})`);
-	logger.warn(`POST /nextstep/ - User ${userData.username} (${userData.userId}) has completed the event`);
+	logger.warning(`POST /nextstep/ - User ${userData.username} (${userData.userId}) has completed the event`);
 }
 
 async function setUserData(dataToken, data) {
@@ -134,7 +162,7 @@ async function sendStartLogs(user) {
 	let channel = guild.channels.cache.get(process.env.LOGS_CHANNEL_ID);
 	if(!channel) return;
 	let userCount = await getUserCount();
-	await channel.send(`:door: <@${user.userId}> (${user.username}) vient de commencer l'énigme **(${userCount} participant${userCount > 1 ? "s" : ""})**`);
+	await channel.send(`:door: <@${user.userId}> (${user.username}) vient de commencer l'énigme **(${userCount} participant${userCount > 1 ? "s" : ""} au total)**`);
 }
 
 async function sendStepPassLogs(user, step) {
@@ -142,7 +170,9 @@ async function sendStepPassLogs(user, step) {
 	if(!guild) return;
 	let channel = guild.channels.cache.get(process.env.LOGS_CHANNEL_ID);
 	if(!channel) return;
-	await channel.send(`:rocket: <@${user.userId}> (${user.username}) est passé à l'étape \` ${step} \``);
+	let { steps } = await getGlobalStats();
+	let stepCount = steps.find((s) => s.step == step);
+	await channel.send(`:rocket: <@${user.userId}> (${user.username}) est passé à l'étape \` ${step} \`  ${stepCount ? `*(${stepCount.count} participant${stepCount.count > 1 ? "s" : ""} à cette étape)*` : ""}`);
 }
 
 async function sendEndLogs(user) {
@@ -150,7 +180,9 @@ async function sendEndLogs(user) {
 	if(!guild) return;
 	let channel = guild.channels.cache.get(process.env.LOGS_CHANNEL_ID);
 	if(!channel) return;
-	await channel.send(`🏆 <@${user.userId}> (${user.username}) vient de terminer toute les étapes ||${user.giftCode}||`);
+	let { completed } = await getGlobalStats();
+	let classement = completed === 1 ? "1er" : `${completed}ème`;
+	await channel.send(`🏆 <@${user.userId}> (${user.username}) vient de terminer toute les étapes en étant **${classement}** ||${user.giftCode}||`);
 }
 
 app.use(express.json());
