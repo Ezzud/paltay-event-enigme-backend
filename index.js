@@ -171,8 +171,8 @@ async function sendStepPassLogs(user, step) {
 	let channel = guild.channels.cache.get(process.env.LOGS_CHANNEL_ID);
 	if(!channel) return;
 	let { steps } = await getGlobalStats();
-	let stepCount = steps.find((s) => s.step == step);
-	await channel.send(`:rocket: <@${user.userId}> (${user.username}) est passé à l'étape \` ${step} \`  ${stepCount ? `*(${stepCount.count} participant${stepCount.count > 1 ? "s" : ""} à cette étape)*` : ""}`);
+	let stepCount = steps.find((s) => s.step == step) || 0;
+	await channel.send(`:rocket: <@${user.userId}> (${user.username}) est passé à l'étape \` ${step} \`  ${stepCount ? `*(${stepCount.count+1} participant${stepCount.count > 1 ? "s" : ""} à cette étape)*` : ""}`);
 }
 
 async function sendEndLogs(user) {
