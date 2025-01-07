@@ -182,7 +182,7 @@ async function sendEndLogs(user) {
 	if(!channel) return;
 	let { completed } = await getGlobalStats();
 	let classement = completed === 1 ? "1er" : `${completed}ème`;
-	await channel.send(`🏆 <@${user.userId}> (${user.username}) vient de terminer toute les étapes en étant **${classement}** ||${user.giftCode}||`);
+	await channel.send(`### 🏆 <@${user.userId}> (${user.username}) vient de terminer toute les étapes en étant **${classement}** ||${user.giftCode}||`);
 }
 
 app.use(express.json());
